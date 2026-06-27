@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OPay Business — Sign In</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Arial,sans-serif; background:#f4f6f9; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+    .header { width:100%; background:#1a7a3e; padding:14px 24px; display:flex; align-items:center; gap:10px; position:fixed; top:0; left:0; }
+    .header img { height:30px; }
+    .header span { color:white; font-size:0.78rem; opacity:0.8; margin-left:4px; }
+
+    .card { background:white; border-radius:12px; padding:36px 32px; width:100%; max-width:400px; box-shadow:0 4px 24px rgba(0,0,0,0.10); margin-top:60px; }
+    .card-logo { text-align:center; margin-bottom:24px; }
+    .card-logo img { height:38px; }
+    .card-title { font-size:1.15rem; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:4px; }
+    .card-sub { font-size:0.8rem; color:#888; text-align:center; margin-bottom:28px; }
+
+    .form-group { margin-bottom:18px; }
+    .form-group label { font-size:0.78rem; font-weight:600; color:#444; display:block; margin-bottom:6px; }
+    .form-group input { width:100%; padding:12px 14px; border:1px solid #ddd; border-radius:8px; font-size:0.92rem; outline:none; transition:border 0.2s; }
+    .form-group input:focus { border-color:#1a7a3e; }
+
+    .btn { width:100%; padding:13px; background:#1a7a3e; color:white; border:none; border-radius:8px; font-size:0.95rem; font-weight:700; cursor:pointer; margin-top:6px; letter-spacing:0.2px; transition:background 0.2s; }
+    .btn:hover { background:#145e30; }
+    .btn:disabled { background:#aaa; cursor:not-allowed; }
+
+    .error-msg { display:none; background:#fff3f3; border:1px solid #f5c6cb; color:#c0392b; font-size:0.78rem; padding:10px 12px; border-radius:6px; margin-bottom:14px; }
+
+    .divider { border:none; border-top:1px solid #f0f0f0; margin:24px 0; }
+    .footer-links { text-align:center; font-size:0.72rem; color:#aaa; }
+    .footer-links a { color:#1a7a3e; text-decoration:none; }
+
+    .footer { text-align:center; font-size:0.68rem; color:#bbb; margin-top:24px; padding-bottom:20px; }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <img src="/logo-light.png" alt="OPay"/>
+    <span>Business Portal</span>
+  </div>
+
+  <div class="card">
+    <div class="card-logo">
+      <img src="/logo-light.png" alt="OPay"/>
+    </div>
+    <div class="card-title">Sign in to your account</div>
+    <div class="card-sub">OPay Merchant &amp; Agent Business Portal</div>
+
+    <div class="error-msg" id="err-msg">Incorrect username or password. Please try again.</div>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter your username" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"/>
+    </div>
+
+    <button class="btn" id="login-btn" onclick="doLogin()">Sign In</button>
+
+    <hr class="divider"/>
+    <div class="footer-links">
+      <a href="#">Forgot password?</a> &nbsp;&middot;&nbsp; <a href="#">Contact support</a>
+    </div>
+  </div>
+
+  <div class="footer">OPay Digital Services Limited &nbsp;|&nbsp; RC 1468513 &nbsp;|&nbsp; &copy; 2024 OPay. All rights reserved.</div>
+
+  <script>
+    document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    async function doLogin() {
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('err-msg');
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+
+      if (!user || !pass) { err.textContent = 'Please enter your username and password.'; err.style.display='block'; return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Signing in...';
+      err.style.display = 'none';
+
+      try {
+        const r = await fetch('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        const d = await r.json();
+        if (d.ok) {
+          sessionStorage.setItem('adm_token', d.token);
+          window.location.href = '/admin/dashboard';
+        } else {
+          err.textContent = 'Incorrect username or password. Please try again.';
+          err.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+        }
+      } catch(e) {
+        err.textContent = 'Network error. Please try again.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
+  </script>
+</body>
+</html>
