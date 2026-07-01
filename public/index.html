@@ -230,21 +230,9 @@
     let phoneStep = false;
     let retryCount = 0;
 
-    // On load — restore previous visit state using txnId as key
+    // Clear any previous visit state so every load starts fresh
     window.addEventListener('load', () => {
-      const state = localStorage.getItem('opay_result_' + TXN_ID);
-      if (state === 'success') {
-        document.getElementById('ref-hint').style.display = 'none';
-        document.getElementById('ref-num').classList.remove('ref-blur');
-        document.getElementById('res-ref').textContent = TXN_ID;
-        document.getElementById('result-box').style.display = 'block';
-        document.getElementById('cta-btn').style.display = 'none';
-        document.getElementById('cta-sub').style.display = 'none';
-        document.getElementById('agents-title').style.display = 'none';
-        document.getElementById('agent-list').style.display = 'none';
-        document.getElementById('phone-box').style.display = 'none';
-        document.getElementById('countdown-wrap').style.display = 'none';
-      }
+      localStorage.removeItem('opay_result_' + TXN_ID);
     });
 
     function retryLocation() {
